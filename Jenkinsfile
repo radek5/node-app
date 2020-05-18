@@ -14,7 +14,7 @@ pipeline {
         stage('DockerHub Push'){
             steps{
                 withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerHubPwd')]) {
-                    sh "docker login -u kammana -p ${dockerHubPwd}"
+                    sh "docker login -u rade5 -p 5H@!ar@y"
                     sh "docker push kammana/nodeapp:latest"
                 }
             }
