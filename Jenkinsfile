@@ -26,11 +26,11 @@ pipeline {
 			    	sh "ssh ec2-user@3.8.153.242 kubectl create -f ."
 			    }
 		        }
-		    }
-                }
+		}
           }
-    }
+     }
 }
+
 
 def getDockerTag(){
     def tag  = sh script: 'git rev-parse HEAD', returnStdout: true
