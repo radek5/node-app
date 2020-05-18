@@ -1,26 +1,22 @@
 pipeline {
     agent any
-    environment{
-        DOCKER_TAG = getDockerTag()
     }
     stages{
         stage('Build Docker Image'){
             steps{
-                sh "docker build . -t kammana/nodeapp:${DOCKER_TAG}"
+                sh "docker build . -t kammana/nodeapp:latest"
             }
         }
         stage('DockerHub Push'){
             steps{
                 withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerHubPwd')]) {
                     sh "docker login -u kammana -p ${dockerHubPwd}"
-                    sh "docker push kammana/nodeapp:${DOCKER_TAG}"
+                    sh "docker push kammana/nodeapp:latest"
                 }
             }
         }
         stage('Deploy to k8s'){
             steps{
-                sh "chmod +x changeTag.sh"
-		sh "./changeTag.sh ${DOCKER_TAG}"
 		sshagent(['k8s-master']) {
                     sh "scp -o StrictHostKeyChecking=no services.yml node-app-pod.yml ec2-user@3.8.153.242:/home/ec2-user/nodeapp"
 			script{
