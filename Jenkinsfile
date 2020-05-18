@@ -9,7 +9,7 @@ pipeline {
         }
         stage('DockerHub Push'){
             steps{
-                withCredentials {
+                withCredentials{
                     sh "docker login -u rade5 -p 5H@!ar@y"
                     sh "docker push kammana/nodeapp:latest"
                 }
