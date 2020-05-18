@@ -1,34 +1,32 @@
-node{
-    def imgVersion = UUID.randomUUID().toString()
-    def dockerImage = "kammana/nodeapp-6pm:${imgVersion}"
-    stage('Source Checkout'){
-        
-        git 'https://github.com/javahometech/node-app'
+pipeline {
+    agent any
+    environment{
+        DOCKER_TAG = getDockerTag()
     }
-    
-    
-    stage('Build Docker Image'){
-        sh "docker build -t ${dockerImage} ."
+    stages{
+        stage('Build Docker Image'){
+            steps{
+                sh "docker build . -t kammana/nodeapp:${DOCKER_TAG}"
+            }
+        }
+        stage('DockerHub Push'){
+            steps{
+                withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerHubPwd')]) {
+                    sh "docker login -u kammana -p ${dockerHubPwd}"
+                    sh "docker push kammana/nodeapp:${DOCKER_TAG}"
+                }
+            }
+        }
+        stage('Deploy to k8s'){
+            steps{
+                sh "chmod +x changeTag.sh"
+				sh "./changeTag.sh ${DOCKER_TAG}"
+            }
+        }
     }
-    
-    stage('Push DockerHub'){
-		withCredentials([string(credentialsId: 'docker-hub', variable: 'dockerhubPwd')]) {
-			sh "docker login -u kammana -p ${dockerhubPwd}"
-		}
-        
-        sh "docker push ${dockerImage}"
-    }
-    
-	stage('Dev Deploy'){
-		def dockerRun = "docker run -d -p 8080:8080 --name nodeapp ${dockerImage}"
-		sshagent(['dev-docker']) {
-		    try{
-				sh "ssh -o StrictHostKeyChecking=no ec2-user@13.127.166.0 docker rm -f nodeapp "
-			}catch(e){
-			
-			
-			}
-			sh "ssh  ec2-user@13.127.166.0 ${dockerRun}"
-		}
-	}
+}
+
+def getDockerTag(){
+    def tag  = sh script: 'git rev-parse HEAD', returnStdout: true
+    return tag
 }
