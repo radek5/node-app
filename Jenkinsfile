@@ -11,7 +11,7 @@ pipeline {
             steps{
                 withCredentials([usernamePassword(credentialsId: 'docker_login', passwordVariable: 'pass', usernameVariable: 'user')]) {
 		    sh "docker login -u ${user} -p ${pass}"
-                    sh "docker push kammana/nodeapp:latest"
+                    sh "docker push rade5/nodeapp:latest"
                 }
             }
         }
