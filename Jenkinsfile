@@ -23,8 +23,16 @@ pipeline {
 		sh "./changeTag.sh ${DOCKER_TAG}"
 		sshagent(['k8s-master']) {
                     sh "scp -o StrictHostKeyChecking=no services.yml node-app-pod.yml ec2-user@3.8.153.242:/home/ec2-user/nodeapp"
-            }
-        }
+			script{
+			    try{
+				sh "ssh ec2-user@3.8.153.242 kubectl apply -f ."
+			    }catch(error){
+			    	sh "ssh ec2-user@3.8.153.242 kubectl create -f ."
+			    }
+		        }
+		    }
+                }
+          }
     }
 }
 
